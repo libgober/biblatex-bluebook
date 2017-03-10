@@ -1,8 +1,95 @@
 % $Id: biblatex-bluebook.cbx,v 0.1 $
 %http://tex.stackexchange.com/questions/60967/biblatex-define-custom-style-or-modify-existing
-
-
+%http://tex.stackexchange.com/questions/12806/guidelines-for-customizing-biblatex-styles
+%changing entry order, hardcore http://tex.stackexchange.com/questions/6743/biblatex-changing-the-order-of-entries
+	
 \ProvidesFile{biblatex-bluebook.cbx}
 [\abx@cbxid $Id: biblatex-bluebook.cbx.cbx, v 1.0 $]
 
-\RequiteCitationStyle{verbose-ibid}
+\RequireCitationStyle{verbose-ibid}
+
+%get rid of junk that bluebook doesn't yet understand
+\ExecuteBibliographyOptions{isbn=false,doi=false,eprint=false}
+
+%change to commas separating units
+\renewcommand{\newunitpunct}{\addcomma\addspace}
+
+%
+% JOURNAL FOCUSED STUFF
+%
+%title of article should be italics
+\DeclareFieldFormat
+  [article,inbook,incollection,inproceedings,patent,thesis,unpublished]
+  {title}{\mkbibitalic{#1\isdot}}
+%pages should be staight numbers
+\DeclareFieldFormat[article]{pages}{#1}
+  
+%title of journal should be small caps
+\DeclareFieldFormat{journaltitle}{\mkbibacro{#1}}
+
+%found while looking at standard.bbx
+\newbibmacro*{journal+issuetitle+note+pages}{%
+  \printfield{volume}%
+  \setunit*{\addspace}%
+  \usebibmacro{journal}%
+  \setunit*{\addspace}%
+  \iffieldundef{series}
+    {}
+    {\newunit
+     \printfield{series}%
+     \setunit{\addspace}}%
+  \printfield{number}%
+  \setunit{\addspace}%
+  \newunit
+  \printfield{pages}%
+  \setunit*{\addspace}%
+  \usebibmacro{issue+date}%
+  \setunit{\addcolon\space}%
+  \usebibmacro{issue}%
+  \newunit}
+
+\DeclareBibliographyDriver{article}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/translator+others}%
+  \setunit{\printdelim{nametitledelim}}\newblock
+  \usebibmacro{title}%
+  \newunit
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byauthor}%
+  \newunit\newblock
+  \usebibmacro{bytranslator+others}%
+  \newunit\newblock
+  \printfield{version}%
+  \newunit\newblock
+  \usebibmacro{in:}%
+  \usebibmacro{journal+issuetitle+note+pages}%
+  \newunit
+  \usebibmacro{byeditor+others}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+    {\printfield{issn}}
+    {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \newunit\newblock
+  \iftoggle{bbx:related}
+    {\usebibmacro{related:init}%
+     \usebibmacro{related}}
+    {}%
+  \usebibmacro{finentry}}
+
+
+% Remove "in" for articles
+\renewbibmacro{in:}{%
+  \ifentrytype{article}
+    {}
+    {\printtext{\bibstring{in}\nopunct\addspace}}}
+
+
+\endinput
